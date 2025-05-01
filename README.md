@@ -221,7 +221,7 @@ pandas.Series
 Example
 -------
 ```python
-ofi_sum = compute_OFI_between_timestamps(df, '09:30', '09:35')
+ofi_sum = compute_OFI_between_timestamps(df, '2024-10-21 11:54:29.221064336+00:00', '2024-10-21 11:54:29.764673165+00:00')
 ```  
 
 ---
@@ -251,7 +251,7 @@ Example
 -------
 ```python
 integ_sum, w = compute_integrated_OFI_between_timestamps(
-    df, 2024-10-21 11:54:29.221064336+00:00', '2024-10-21 11:54:29.764673165+00:00', training_start=0, training_end=1000)
+    df, '2024-10-21 11:54:29.221064336+00:00', '2024-10-21 11:54:29.764673165+00:00', training_start=0, training_end=1000)
 ```
 
 ---
@@ -281,7 +281,7 @@ Example
 -------
 ```python
 cross_df = compute_cross_asset_features(
-    [dfA, dfB], 2024-10-21 11:54:29.221064336+00:00', '2024-10-21 11:54:29.764673165+00:00', [0,0], [1000,1200], [0.5, 0.5]
+    [dfA, dfB], '2024-10-21 11:54:29.221064336+00:00', '2024-10-21 11:54:29.764673165+00:00', [0,0], [1000,1200], [0.5, 0.5]
 )
 ```  
 
