@@ -13,6 +13,17 @@ features = features_at_stamp(df, target_index, training_start, training_end)
 # print baselevel ofi and integrated ofi
 print(features["ofi_1"], features["ofi_I"])
 
+
+#we can also use the time-infomred feature, this allows us to compute ofi over a fixed time-frame in calendar time
+time_frame = '10s'
+#get the multi-level-ofi data over that time period (h = 10s)
+multi_level_ofi = compute_normalized_OFI_time_informed(df, window = time_frame)
+#get the integrated ofi data over that time period (h = 10s) but we have to select a training start and end in datetime.
+training_start, training_end = df.index[0], df.index[1000] 
+integrated_ofi = compute_integrated_OFI_time_informed(df,training_start, training_end, window = time_frame)
+
+
+
 # suppose that we have more than one asset data, we can compute cross asset features. 
 df_2 = load_preprocess("MSFT_data.csv")
 # due to potential timestamp discrepancy we avoid using iloc indexing,
