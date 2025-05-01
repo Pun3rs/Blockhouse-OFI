@@ -149,6 +149,64 @@ integ, w = compute_integrated_OFI(df, start=0, end=1000, period=10)
 
 ---
 
+### `compute_normalized_OFI_time_informed(df, window='1s')`
+
+Compute normalized OFI over a partitioned window of fixed unit-time. 
+
+Parameters
+----------
+df : pandas.DataFrame
+    Order book snapshot data.
+
+window : int, default 1s
+    Rolling window length (in time units) for summing OFI and averaging mid-sizes.
+
+Returns
+-------
+pandas.DataFrame
+    Columns `ofi_1, ofi_2, ..., ofi_M`
+    where each level’s OFI is divided by the time-and-level average
+    of mid-queue sizes over the window.
+
+Example
+-------
+```python
+norm_ofi = compute_normalized_OFI_time_informed(df, window='10s')
+```  
+
+---
+
+### `compute_integrated_OFI_time_informed(df, start, end, window='1s')`
+
+Compute the Integrated OFI by PCA projection over a partitioned window of fixed unit time.
+
+Parameters
+----------
+df : pandas.DataFrame
+    Order book snapshot data.
+
+start, end : str or label
+    Historical window (inclusive) for fitting PCA on normalized OFI.
+
+window : int, default 1s
+    Rolling window length (in time units)
+
+Returns
+-------
+integrated : pandas.Series
+    Single-component OFI time series (projection on first PC), indexed as `df`.
+
+weights : pandas.Series
+    L1-normalized PCA loadings for each level (`ofi_1…ofi_M`).
+
+Example
+-------
+```python
+integ, w = compute_integrated_OFI(df, start = '2024-10-21 11:54:29.221064336+00:00', end = '2024-10-21 11:54:29.764673165+00:00', window='10s')
+```  
+
+---
+
 ### `features_at_stamp(df, n, start, end, period=1)`
 
 Extract all feature values at a single update index.

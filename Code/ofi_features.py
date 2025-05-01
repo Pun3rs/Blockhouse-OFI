@@ -180,6 +180,7 @@ def compute_integrated_OFI(df, start, end, period=1):
 
 
 
+
 """
 Computes the best_level, multi_level and integrated OFI for a given timestamp. Note that cross-asset is not avaliable since the data-set only contains one asset.
 """
@@ -199,6 +200,66 @@ def features_at_stamp(df,n,start, end, period=1):
 
 
 
+def compute_normalized_OFI_time_informed(df, window='1s'):
+    """
+    Compute h-period normalized order‐flow (ofi) for all available depth levels.
+    Returns a DataFrame with columns ofi_{side}_1, ofi_{side}_2, ..., until no more levels exist.
+    """
+    #Raw order-flow imbalance at all levels 1…M
+    OFI = compute_OFI_all_levels(df)                    
+
+    #Sum OFI
+    OFI_block = OFI.groupby(pd.Grouper(freq=window)).sum()
+
+    #Average mid-queue sizes inside the same blocks
+    depth = len(OFI.columns)
+    mid_sizes = pd.concat(
+        {
+            f"mid_size_{m+1}":
+            (df[f"bid_sz_{m:02d}"] + df[f"ask_sz_{m:02d}"]) / 2
+            for m in range(depth)
+        },
+        axis=1,
+    )
+    mid_mean_block = mid_sizes.groupby(pd.Grouper(freq=window)).mean()
+
+    # Normalisation factor: mean across depth levels per block
+    norm_factor = mid_mean_block.mean(axis=1)
+
+    # Divide summed OFI by the factor (align on block index)
+    normalized_OFI = OFI_block.div(norm_factor, axis=0)
+
+    normalized_OFI.columns = [f"ofi_{m+1}" for m in range(depth)]
+    return normalized_OFI.dropna()
+
+def compute_integrated_OFI_time_informed(
+        df,
+        training_start,
+        training_end,
+        window="1s"):
+   
+    # Time-bucketed normalised OFI (no rolling overlap)
+    norm_ofi = compute_normalized_OFI_blocks(df, window=window)
+
+    # Training slice for PCA weights
+    train_set = norm_ofi.loc[training_start:training_end]
+
+    #One-component PCA
+    pca = PCA(n_components=1)
+    pca.fit(train_set.values)
+
+    raw_weights = pd.Series(
+        pca.components_[0],
+        index=norm_ofi.columns,
+        name="PC1_weights",
+    )
+    weights = raw_weights / raw_weights.abs().sum()      # L1 normalise
+
+    #Project every bucket’s OFI vector onto PC1
+    integrated = norm_ofi.dot(weights)
+
+    return integrated, weights
+    
 def compute_normalized_OFI_between_timestamps(df, start, end):
     """
     Compute h-period normalized order‐flow (ofi) for all available depth levels.
