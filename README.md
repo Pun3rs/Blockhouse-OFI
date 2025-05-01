@@ -1,98 +1,43 @@
 
 # OFI Feature Generation Documentation
 Example Usage:
-
-    #load into dataframe
-    df = load_preprocess("first_25000_rows.csv')
-    #compute the single asset features for a specific index
-    target_index = 100
-    #set the PCA extraction start and end date
-    training_start, training_end = 0, 1000
-    features = features_at_stamp(df, target_index, training_start, training_end)
-	
-	#print baselevel ofi and integrated ofi
-	print(features["ofi_1"], features["ofi_I"])
-
-	#suppose that we have more than one asset data, we can compute cross asset features. 
-	df_2 = load_preprocess("MSFT_data.csv")
-	#due to potential timestamp disrepancy we avoid using iloc indexing,
-	choose a start and end time stamp.
-	
-	start_time = "2024-10-21 11:54:29.764673165+00:00"
-	end_time = "2024-10-21 13:04:16.583527688+00:00"
-	
-	#we choose a training index for PCA extraction
-	training_start = [0,0]
-	training_end = [1000,1000]
-
-	#suppose that we have the cross asset weights from LASSO regressions
-	weights = [0.1,0.9]
-	
-	#then perform the feature generation for the given time frame
-	features_cross_assets = compute_cross_asset_features([df,df_2], start_time, end_time,  training_start, weights)
-	
-	#get asset 1 best level ofi
-	print(features_cross_assets["AAPL"]["ofi_1"])
-	#get asset 2 best level ofi
-	print(features_cross_assets["MSFT"]["ofi_1"])
-	#get the cross level ofi for level 1.
-	print(features_cross_assets["COFI"]["ofi_1"])
-
-    
------
-
-### `load_preprocess(file_path)`
-
-Loads the csv data from "file_path", reindex the dataframe using timestamp "ts_event".
-
-Parameters
-----------
-file_path  : str
-The file path of the csv dataset.
-
-## Returns
-
-pandas.DataFrame
-The loaded DataFrame of the order book data, ready to be further analyzed.
-
-----------
-
-
-### `compute_OF(df, m, side, suppress=False)`
-
-Compute the single asset per-update order-flow (OF) series for a given depth level and book side. Computes this for all time-stamp in the DataFrame. 
-
-Parameters
-----------
-df : pandas.DataFrame
-    Full order book snapshot data, indexed by timestamp with columns
-    including `symbol`, `bid_px_##`, `bid_sz_##`, `ask_px_##`, `ask_sz_##`.
-
-m : int
-    Depth level (1-based) at which to compute order flow. Level 1 corresponds to
-    suffix `00`, level 2 to `01`, etc.
-
-side : {'b', 'a'}
-    Book side: `'b'` for bid or `'a'` for ask.
-
-suppress : bool, default False
-    If True, suppress "too deep" warnings when `m` exceeds available levels.
-
-Returns
--------
-pandas.Series
-    Order flow values at level `m` and side `side`, aligned with `df.index`:
-    
-Raises
-------
-KeyError
-    If the columns for the requested level/side do not exist and
-    `suppress=False`.
-
-Example
--------
 ```python
-of1 = compute_OF(df, m=1, side='b')
+# load into dataframe
+df = load_preprocess("first_25000_rows.csv")
+# compute the single asset features for a specific index
+target_index = 100
+# set the PCA extraction start and end date
+training_start, training_end = 0, 1000
+features = features_at_stamp(df, target_index, training_start, training_end)
+
+# print baselevel ofi and integrated ofi
+print(features["ofi_1"], features["ofi_I"])
+
+# suppose that we have more than one asset data, we can compute cross asset features. 
+df_2 = load_preprocess("MSFT_data.csv")
+# due to potential timestamp discrepancy we avoid using iloc indexing,
+# choose a start and end time stamp.
+start_time = "2024-10-21 11:54:29.764673165+00:00"
+end_time   = "2024-10-21 13:04:16.583527688+00:00"
+
+# we choose a training index for PCA extraction
+training_start = [0,0]
+training_end   = [1000,1000]
+
+# suppose that we have the cross asset weights from LASSO regressions
+weights = [0.1, 0.9]
+
+# then perform the feature generation for the given time frame
+features_cross_assets = compute_cross_asset_features(
+    [df, df_2], start_time, end_time, training_start, training_end, weights
+)
+
+# get asset 1 best level ofi
+print(features_cross_assets["AAPL"]["ofi_1"])
+# get asset 2 best level ofi
+print(features_cross_assets["MSFT"]["ofi_1"])
+# get the cross level ofi for level 1
+print(features_cross_assets["COFI"]["ofi_1"])
 ```  
 
 ---
